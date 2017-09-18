@@ -5,12 +5,17 @@
 
 import jira, shelve, requests
 
-NOTIFICATIONS = {'slack':True, 'email':False}
+NOTIFICATIONS = {
+    'slack':True,
+    'email':False
+    }
 
 notifyMsg = ''
+
+# Create file to save settings
 settings = shelve.open(".settings")
 
-# Create setting if missing.
+# Add setting to shelve if missing.
 def getConfig( x, prompt, new=None ):   
     try:
         thesettings = settings[x]
@@ -32,7 +37,6 @@ def setSettings():
     getConfig('project', 'Enter Project Name: ')
     if NOTIFICATIONS['slack'] == True:
         getConfig('slack', 'Enter Slack Webhook URL: ')
-##    print(settings['jiraURL'])
 
 # Login to Jira
 def login():
@@ -57,7 +61,6 @@ issues = jira.search_issues('project=' + settings['project'])
 issueCount = getConfig('issueCount', '', len(issues))
 if issueCount != settings['issueCount']:
     notifyMsg += (int(issueCount - int(settings['issueCount']))) + ' new issues.\n'
-                      
 for issue in issues:
     exists = True
     issueData = {'assignee':str(issue.fields.assignee), 'commentcount':len(jira.comments(issue)), 'status':str(issue.fields.status)}
@@ -68,9 +71,9 @@ for issue in issues:
         if oldData['commentcount'] != issueData['commentcount']:
             notifyMsg += str(issue) + int(issueData['commentcount']) - int(oldData['commentcount']) + ' new comments.\n'
         if oldData['status'] != issueData['status']:
-            notifyMsg += str(issue) + ' status has changed to ' + oldData['status'] + '.\n'
+            notifyMsg += str(issue) + ' status has changed to ' + issueData['status'] + '.\n'
     except Exception:
-        notifyMsg += 'New issue: ' + str(issue) + ' ' + issue.fields.summary + '\n'
+        notifyMsg += 'New issue: ' + str(issue) + ' ' issueData['status'] + ' ' + issueData['assignee'] + ' ' + issue.fields.summary + '\n'
         oldData = issueData
     #print(str(issue), issue.fields.assignee,len(jira.comments(issue)), issue.fields.status)
     getConfig(str(issue), '', issueData)
@@ -78,9 +81,11 @@ for issue in issues:
 # Notify on changes
 if notifyMsg != '':
     data = {'text':notifyMsg}
+    print(data)
     if NOTIFICATIONS['slack'] != False:
         # https://api.slack.com/apps
         requests.post(getConfig('slack', 'Enter Slack Webhook URL: '), json=data)
+        print(settings['slack'])
 
 # TODO: Add email notifications
 settings.close()
