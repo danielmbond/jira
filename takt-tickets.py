@@ -73,7 +73,7 @@ for issue in issues:
         if oldData['status'] != issueData['status']:
             notifyMsg += str(issue) + ' status has changed to ' + issueData['status'] + '.\n'
     except Exception:
-        notifyMsg += 'New issue: ' + str(issue) + ' ' issueData['status'] + ' ' + issueData['assignee'] + ' ' + issue.fields.summary + '\n'
+        notifyMsg += 'New issue: ' + str(issue) + ' ' + issueData['status'] + ' ' + issueData['assignee'] + ' ' + issue.fields.summary + '\n'
         oldData = issueData
     #print(str(issue), issue.fields.assignee,len(jira.comments(issue)), issue.fields.status)
     getConfig(str(issue), '', issueData)
