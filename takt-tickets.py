@@ -67,15 +67,17 @@ for issue in issues:
     try:
         oldData = settings[str(issue)]
         if oldData['assignee'] != issueData['assignee']:
-            notifyMsg += str(issue) + ' has been assigned to ' + issueData['assignee'] + '\n'
+            notifyMsg += ' has been assigned to ' + issueData['assignee']
         if oldData['commentcount'] != issueData['commentcount']:
-            notifyMsg += str(issue) + int(issueData['commentcount']) - int(oldData['commentcount']) + ' new comments.\n'
+            notifyMsg += ' has ' + str(int(issueData['commentcount']) - int(oldData['commentcount'])) + ' new comments'
         if oldData['status'] != issueData['status']:
-            notifyMsg += str(issue) + ' status has changed to ' + issueData['status'] + '.\n'
-    except Exception:
-        notifyMsg += 'New issue: ' + str(issue) + ' ' + issueData['status'] + ' ' + issueData['assignee'] + ' ' + issue.fields.summary + '\n'
+            notifyMsg += ' and status has changed to ' + issueData['status'] + '.\n'
+        if len(notifyMsg) > 0:
+            notifyMsg = str(issue) + notifyMsg
+    except KeyError:
+        notifyMsg += 'New issue: ' + str(issue) + ' '  + issueData['status'] + ' ' + issueData['assignee'] + ' ' + issue.fields.summary + '\n'
 ##        oldData = issueData
-##  print(str(issue), issue.fields.assignee,len(jira.comments(issue)), issue.fields.status)
+    #print(str(issue), issue.fields.assignee,len(jira.comments(issue)), issue.fields.status)
     getConfig(str(issue), '', issueData)
 
 # Notify on changes
