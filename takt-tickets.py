@@ -29,6 +29,12 @@ def getConfig( x, prompt, new=None ):
         thesettings = settings[x]
     return thesettings
 
+def addTrailingSlash(url):
+    url = url.strip()
+    if url[-1] != '/':
+        url += '/'
+    return(url)
+
 # Save URL, credentials, and project name.
 def setSettings():
     getConfig('jiraURL', 'Enter Jira project URL: ')
@@ -64,6 +70,7 @@ if issueCount != settings['issueCount']:
 for issue in issues:
     loopMsg = ''
     exists = True
+    issueLink = '<' + addTrailingSlash(settings['jiraURL']) + 'browse/' + str(issue) + '|' + str(issue) +  '>'
     issueData = {'assignee':str(issue.fields.assignee), 'commentcount':len(jira.comments(issue)), 'status':str(issue.fields.status)}
     try:
         oldData = settings[str(issue)]
@@ -74,9 +81,9 @@ for issue in issues:
         if oldData['status'] != issueData['status']:
             loopMsg += ' and status has changed to ' + issueData['status'] + '.\n'
         if len(notifyMsg) > 0:
-            loopMsg = str(issue) + notifyMsg
+            loopMsg = issueLink + notifyMsg
     except KeyError:
-        loopMsg += 'New issue: ' + str(issue) + ' '  + issueData['status'] + ' ' + issueData['assignee'] + ' ' + issue.fields.summary + '\n'
+        loopMsg += 'New issue: ' + issueLink + ' '  + issueData['status'] + ' ' + issueData['assignee'] + ' ' + issue.fields.summary + '\n'
     notifyMsg += loopMsg
     #print(str(issue), issue.fields.assignee,len(jira.comments(issue)), issue.fields.status)
     getConfig(str(issue), '', issueData)
