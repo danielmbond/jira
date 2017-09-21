@@ -66,7 +66,7 @@ login()
 issues = jira.search_issues('project=' + settings['project'])
 issueCount = getConfig('issueCount', '', len(issues))
 if issueCount != settings['issueCount']:
-    notifyMsg += (int(issueCount - int(settings['issueCount']))) + ' new issues.\n'
+    notifyMsg += str(int(issueCount - int(settings['issueCount']))) + ' new issues.\n'
 for issue in issues:
     loopMsg = ''
     exists = True
