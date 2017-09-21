@@ -72,26 +72,30 @@ for issue in issues:
     exists = True
     issueLink = '<' + addTrailingSlash(settings['jiraURL']) + 'browse/' + str(issue) + '|' + str(issue) +  '>'
     issueData = {'assignee':str(issue.fields.assignee), 'commentcount':len(jira.comments(issue)), 'status':str(issue.fields.status)}
-    try:
-        oldData = settings[str(issue)]
-        if oldData['assignee'] != issueData['assignee']:
-            loopMsg += ' has been assigned to ' + issueData['assignee']
-        if oldData['commentcount'] != issueData['commentcount']:
-            loopMsg += ' has ' + str(int(issueData['commentcount']) - int(oldData['commentcount'])) + ' new comments'
-        if oldData['status'] != issueData['status']:
-            loopMsg += ' and status has changed to ' + issueData['status'] + '.\n'
-        if len(notifyMsg) > 0:
-            loopMsg = issueLink + notifyMsg
-    except KeyError:
-        loopMsg += 'New issue: ' + issueLink + ' '  + issueData['status'] + ' ' + issueData['assignee'] + ' ' + issue.fields.summary + '\n'
-    notifyMsg += loopMsg
-    #print(str(issue), issue.fields.assignee,len(jira.comments(issue)), issue.fields.status)
+    if str(issue) not in notifyMsg:
+        try:
+            oldData = settings[str(issue)]
+            if oldData['assignee'] != issueData['assignee']:
+                loopMsg += ' has been assigned to ' + issueData['assignee']
+            if oldData['commentcount'] != issueData['commentcount']:
+                loopMsg += ' has ' + str(int(issueData['commentcount']) - int(oldData['commentcount'])) + ' new comments'
+            if oldData['status'] != issueData['status']:
+                loopMsg += ' and status has changed to ' + issueData['status']
+            if len(loopMsg) > 0:
+                loopMsg = issueLink + loopMsg + "\n"
+        except KeyError:
+            loopMsg += 'New issue: ' + issueLink + ' '  + issueData['status'] + ' ' + issueData['assignee'] + ' ' + issue.fields.summary + '\n'
+        notifyMsg += loopMsg
+        #print(str(issue), issue.fields.assignee,len(jira.comments(issue)), issue.fields.status)
     getConfig(str(issue), '', issueData)
 
 # Notify on changes
 if notifyMsg != '':
     data = {'text':notifyMsg}
-    print(data)
+    try:
+        print(data)
+    except Exception as e:
+        print(e)
     if NOTIFICATIONS['slack'] != False:
         # https://api.slack.com/apps
         requests.post(getConfig('slack', 'Enter Slack Webhook URL: '), json=data)
