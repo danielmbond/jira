@@ -69,6 +69,7 @@ if issueCount != settings['issueCount']:
     notifyMsg += str(int(issueCount - int(settings['issueCount']))) + ' new issues.\n'
 for issue in issues:
     loopMsg = ''
+    newComments = ''
     exists = True
     issueLink = '<' + addTrailingSlash(settings['jiraURL']) + 'browse/' + str(issue) + '|' + str(issue) +  '>'
     issueData = {'assignee':str(issue.fields.assignee), 'commentcount':len(jira.comments(issue)), 'status':str(issue.fields.status)}
@@ -78,11 +79,17 @@ for issue in issues:
             if oldData['assignee'] != issueData['assignee']:
                 loopMsg += ' has been assigned to ' + issueData['assignee']
             if oldData['commentcount'] != issueData['commentcount']:
-                loopMsg += ' has ' + str(int(issueData['commentcount']) - int(oldData['commentcount'])) + ' new comments'
+                newCommentCount = int(issueData['commentcount']) - int(oldData['commentcount'])
+                loopMsg += ' has ' + str(newCommentCount) + ' new comments'
+                try:
+                    for i in range(0,newCommentCount):
+                        newComments += "Comment: " + jira.comment(issue,jira.comments(issue)[-(newCommentCount-i)]).body + "\n"
+                except:
+                    continue
             if oldData['status'] != issueData['status']:
                 loopMsg += ' and status has changed to ' + issueData['status']
             if len(loopMsg) > 0:
-                loopMsg = issueLink + loopMsg + "\n"
+                loopMsg = issueLink + loopMsg + "\n" + newComments
         except KeyError:
             loopMsg += 'New issue: ' + issueLink + ' '  + issueData['status'] + ' ' + issueData['assignee'] + ' ' + issue.fields.summary + '\n'
         notifyMsg += loopMsg
